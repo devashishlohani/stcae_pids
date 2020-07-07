@@ -1,0 +1,2 @@
+AUROC:x_mean(all_videos),AUPR:x_mean(all_videos)
+0.9,0.79
