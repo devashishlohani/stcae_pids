@@ -1,0 +1,2 @@
+AUROC:x_std(all_videos),AUPR:x_std(all_videos)
+0.95,0.28
