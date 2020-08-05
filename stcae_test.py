@@ -6,11 +6,11 @@ if __name__ == "__main__":
         start_time = time.time()
 
         ##--Set path of learned model!
-        # One of Fall Detection or Intrusion Detection
+        # Either Fall Detection or Intrusion Detection
 
         ##---Fall Detection----
-        #pre_load = 'Models/Thermal_Fall/DSTCAE_UpSamp.h5'
-        pre_load = 'Models/Thermal_Fall/DSTCAE_Deconv.h5'
+        pre_load = 'Models/Thermal_Fall/DSTCAE_UpSamp.h5'
+        #pre_load = 'Models/Thermal_Fall/DSTCAE_Deconv.h5'
         #pre_load = 'Models/Thermal_Fall/DSTCAE_C3D.h5'
 
         ##---Intrusion Detection----
@@ -24,9 +24,9 @@ if __name__ == "__main__":
         dset = 'Thermal_Fall'
 
         ##--Choose evaluation measure
-        #RE = 'r'
-        RE = 'x_mean' # for cross context mean: r\mu in paper
-        #RE = 'x_std' # for cross context std: r\sigma in paper
+        #RE = 'r_sigma'
+        #RE = 'r_mu'
+        RE = 'r'
 
         ##--Evaluation type : per_video or all videos
         ## per-video not allowed for Intrusion detection -> because we have videos with only non-intrusion also.
@@ -34,8 +34,8 @@ if __name__ == "__main__":
         ## calculate AUROC/AUPR
         ## Note: should be used in case of animation of a intrusion video
 
-        #evaluation_type = 'per_video' # not for intrusion case (except if you want an animation of video)
-        evaluation_type = 'all_videos'
+        evaluation_type = 'per_video' # not for intrusion case (except if you want an animation of video)
+        #evaluation_type = 'all_videos'
 
         ## Optional: Animation per video
         do_animate = False

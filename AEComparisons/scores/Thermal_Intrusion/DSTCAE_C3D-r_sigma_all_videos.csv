@@ -1,0 +1,2 @@
+AUROC:r_sigma(all_videos),AUPR:r_sigma(all_videos)
+0.9,0.81

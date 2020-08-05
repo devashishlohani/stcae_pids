@@ -78,19 +78,6 @@ def get_output(labels, predictions, get_thres=False, to_plot=False, data_option=
                 if not os.path.isdir(score_dir):
                     os.makedirs(score_dir)
                 print('saving ind. scores to {}'.format(score_dir))
-
-                # plot_fpr_tpr(thresholds_roc, tpr, fpr, [fpr_thres, tpr_thres, optimal_roc_threshold], data_option, score_dir, True )
-                #
-                # plot_ROC_AUC(fpr, tpr, AUROC, data_option, thresholds_roc,
-                #              [fpr_thres, tpr_thres, optimal_roc_threshold], save_fig=True, save_dir = score_dir)
-
-                # plot_ROC_AUC_3D(fpr, tpr, AUROC, data_option, thresholds_roc,
-                #              [fpr_thres, tpr_thres, optimal_roc_threshold],save_pickle=False, save_dir=score_dir)
-
-                # no_skill = len(true_classes[true_classes==1]) / len(true_classes)
-                # plot_PR_AUC(recall, precision, AUPR, no_skill, data_option, thresholds_pr,
-                #             [recal_thres, prec_thres, optimal_pr_threshold], save_fig=True, save_pickle=True, save_dir = score_dir)
-                #
                 plot_RE_hist(labels, predictions, data_option, dir_name, save_dir=score_dir, save_fig=True)
             return AUROC, conf_mat, g_mean, AUPR, optimal_roc_threshold, optimal_pr_threshold
     else:
@@ -234,24 +221,8 @@ def plot_RE_hist(labels, predictions, data_option, dir_name, save_dir="", save_f
     plt.title('{} Intrusion Frames: {}, Non-Intrusion: {}, Total: {}'.
               format(dir_name, len(fall_preds), len(non_fall_preds), len(predictions)), fontsize=15)
     plt.legend()
-
     if save_fig != False:
         plt.savefig(save_dir + '/' + data_option + '-hist.png')
-
-    '''
-    fall_mean = np.mean(fall_preds)
-    fall_std = np.std(fall_preds)
-    non_fall_mean = np.mean(non_fall_preds)
-    non_fall_std = np.std(non_fall_preds)
-    pred_mean = np.mean(predictions)
-    pred_std = np.std(predictions)
-    
-    fig = plt.figure(figsize=(8, 5))
-    plt.hist(predictions, bins='auto', histtype="step", lw=2)
-    plt.xlabel('RE Score {}'.format(data_option), fontsize=14)
-    plt.ylabel('Frames', fontsize=14)
-    plt.title('Histogram for {}, Total Frames: {}'.format(dir_name, len(predictions)), fontsize=15)
-    '''
 
 
 def plot_fpr_tpr(thresholds, tpr, fpr, optimal_point, data_option, save_dir="", save_fig=False):
@@ -535,17 +506,13 @@ def agg_window(RE, agg_type):
         return inwin_std
 
     # Cross Context Anomaly Scores
-    elif agg_type == 'x_mean':
+    elif agg_type == 'r_mu':
         RE_xmat = make_cross_window_matrix(RE)
-        #r stats = get_cross_window_stats(RE_xmat)
-        #r x_mean = stats[:, 0]
         x_mean = get_cross_window_mean(RE_xmat)
         return x_mean
 
-    elif agg_type == 'x_std':
+    elif agg_type == 'r_sigma':
         RE_xmat = make_cross_window_matrix(RE)
-        #r stats = get_cross_window_stats(RE_xmat)
-        #r x_std = stats[:, 1]
         x_std = get_cross_window_std(RE_xmat)
         return x_std
 

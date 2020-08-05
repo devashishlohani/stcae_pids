@@ -139,7 +139,7 @@ class SeqExp(ImgExp):
 
             return data_flip
 
-    def get_MSE(self, test_data, agg_type='x_std'):
+    def get_MSE(self, test_data, agg_type='r_sigma'):
         '''
             MSE for sequential data (video). Uses data chunking with memap for SDU-Filled.
             Assumes windowed
@@ -147,7 +147,7 @@ class SeqExp(ImgExp):
             Params:
                 ndarray test_data: data used to test model (reconstrcut). Of 
                     shape (samples, window length, img_width, img_height)
-                agg_type: how to aggregate windowde scores
+                agg_type: how to aggregate windowed scores
 
             Returns:
                 ndarray: Mean squared error between test_data windows and reconstructed windows,
@@ -181,14 +181,14 @@ class SeqExp(ImgExp):
     def get_MSE_all_agg(self, test_data):
 
         """
-            Gets MSE for all aggregate types 'x_std', 'x_mean', 'in_std', 'in_mean'.
+            Gets MSE for all aggregate types 'r_sigma', 'r_mu', 'in_std', 'in_mean'.
 
             Params:
                 ndarray test_data: data used to test model (reconstruct).
                 shape (samples(windows), window length, img_width, img_height, 1)
 
             Returns:
-                dictionary with keys 'x_std', 'x_mean', 'in_std', 'in_mean', and values 
+                dictionary with keys 'r_sigma', 'r_mu', 'in_std', 'in_mean', and values
                 ndarrays of shape (samples,)
             """
 
@@ -209,7 +209,7 @@ class SeqExp(ImgExp):
         RE = np.mean(np.power(error, 2), axis=2)  # (samples-win_len+1, win_len)
 
         RE_dict = {}
-        agg_type_list = ['x_std', 'x_mean', 'in_std', 'in_mean', 'r']
+        agg_type_list = ['r_sigma', 'r_mu', 'in_std', 'in_mean', 'r']
 
         # Get various per frame RE score
         for agg_type in agg_type_list:
@@ -361,7 +361,7 @@ class SeqExp(ImgExp):
                 AUROC_std = np.std(ROC_mat, axis=0)
                 AUROC_avg_std = join_mean_std(AUROC_avg, AUROC_std)
 
-                # Same for PR values# x_mean, I added
+                # Same for PR values
                 AUPR_avg = np.mean(PR_mat, axis=0)
                 AUPR_std = np.std(PR_mat, axis=0)
                 AUPR_avg_std = join_mean_std(AUPR_avg, AUPR_std)
