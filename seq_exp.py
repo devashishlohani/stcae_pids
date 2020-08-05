@@ -245,10 +245,7 @@ class SeqExp(ImgExp):
 
         hf = h5py.File(path, 'r')
         data_dict = hf['{}/Processed/Split_by_video'.format(dset)] # Get into Split by Videos for Fall Folders Data
-        # Fall(Test) video folders names [Fall1, Fall2, FallN] without data info!!
         vid_dir_keys = generate_test_vid_names(data_dict, dset)
-        #vid_dir_keys_Fall = generate_vid_keys('Fall', dset=dset) # For fall
-        #vid_dir_keys_Fall = generate_vid_keys('Intru', dset=dset) # for INtru
 
         num_vids = len(vid_dir_keys)
         print('num_vids', num_vids)
@@ -273,6 +270,8 @@ class SeqExp(ImgExp):
 
             for Fall_name in vid_dir_keys:
 
+                if(Fall_name=='Intru65'):
+                    exit(8)
                 print(Fall_name)
                 start_time = time.time()
                 # Get frames and labels of a Fallx folder
@@ -309,7 +308,7 @@ class SeqExp(ImgExp):
 
                     print("Without Animation Time %.2f s or %.2f mins" % (time.time() - start_time, (time.time() - start_time) / 60))
 
-                    if animate == True :
+                    if animate == True:
                         ani_dir = './Animation/{}'.format(dset)
                         ani_dir = ani_dir + '/{}'.format(model_name)
                         if not os.path.isdir(ani_dir):
