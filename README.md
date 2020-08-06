@@ -1,14 +1,3 @@
-<style>
-img
-{
-    display:block; 
-    float:none; 
-    margin-left:auto;
-    margin-right:auto;
-    width:60%;
-}
-</style> 
-
 # Spatio-Temporal Convolutional Autoencoders for Perimeter Intrusion Detection by video protection
 
 This source code is for submission at workshop RRPR 2020.
@@ -71,10 +60,11 @@ Place the data in folder Datasets. See README.txt in Datasets for information on
 All results are in AEComparisons folder. 
 
 **Illustrations:**
+\
 Fall Detection
 ![](fall_demo.gif)
-
+\
 Intrusion Detection
 ![](intrusion_demo_1.gif)
-
+\
 ![](intrusion_demo_2.gif)
