@@ -9,24 +9,24 @@ if __name__ == "__main__":
         # Either Fall Detection or Intrusion Detection
 
         ##---Fall Detection----
-        pre_load = 'Models/Thermal_Fall/DSTCAE_UpSamp.h5'
+        #pre_load = 'Models/Thermal_Fall/DSTCAE_UpSamp.h5'
         #pre_load = 'Models/Thermal_Fall/DSTCAE_Deconv.h5'
         #pre_load = 'Models/Thermal_Fall/DSTCAE_C3D.h5'
 
         ##---Intrusion Detection----
         # models not released for privacy concerns
-        #pre_load = 'Models/Thermal_Intrusion/DSTCAE_UpSamp.h5'
+        pre_load = 'Models/Thermal_Intrusion/DSTCAE_UpSamp.h5'
         #pre_load = 'Models/Thermal_Intrusion/DSTCAE_Deconv.h5'
         #pre_load = 'Models/Thermal_Intrusion/DSTCAE_C3D.h5'
 
         ##--Choose dataset (corresponding to model intrusion or fall)
-        #dset = 'Thermal_Intrusion'
-        dset = 'Thermal_Fall'
+        dset = 'Thermal_Intrusion'
+        #dset = 'Thermal_Fall'
 
         ##--Choose evaluation measure
         #RE = 'r_sigma'
-        #RE = 'r_mu'
-        RE = 'r'
+        RE = 'r_mu'
+        #RE = 'r'
 
         ##--Evaluation type : per_video or all videos
         ## per-video not allowed for Intrusion detection -> because we have videos with only non-intrusion also.
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         #evaluation_type = 'all_videos'
 
         ## Optional: Animation per video
-        do_animate = False
-        use_indicative_threshold = False
+        do_animate = True
+        use_indicative_threshold = True
 
         ##--Set frame and window size
         img_width, img_height, win_len = 64, 64, 8
