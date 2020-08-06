@@ -61,9 +61,9 @@ All results are in AEComparisons folder.
 
 **Illustrations:**
 
-_**1) Fall Detection**_ \
+_**1) Fall Detection**_ &nbsp;
 ![](fall_demo.gif)
 
-**_2) Intrusion Detection_** \
+**_2) Intrusion Detection_** &nbsp;
 ![](intrusion_demo_1.gif)
 ![](intrusion_demo_2.gif)
