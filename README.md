@@ -60,11 +60,13 @@ Place the data in folder Datasets. See README.txt in Datasets for information on
 All results are in AEComparisons folder. 
 
 **Illustrations:**
-\
-Fall Detection
+Fall Detection 
+
 ![](fall_demo.gif)
-\
+
+
 Intrusion Detection
+
 ![](intrusion_demo_1.gif)
-\
+
 ![](intrusion_demo_2.gif)
