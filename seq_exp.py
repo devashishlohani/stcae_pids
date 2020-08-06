@@ -141,7 +141,7 @@ class SeqExp(ImgExp):
 
     def get_MSE(self, test_data, agg_type='r_sigma'):
         '''
-            MSE for sequential data (video). Uses data chunking with memap for SDU-Filled.
+            MSE for sequential data (video).
             Assumes windowed
             
             Params:
@@ -163,7 +163,7 @@ class SeqExp(ImgExp):
             test_data = test_data.reshape(len(test_data), img_width, img_height, 1)
             test_data = create_windowed_arr(test_data, stride, win_len)
 
-       # Do prediction on test windows with learned model
+        # Do prediction on test windows with learned model
         recons_seq = model.predict(test_data)  # (samples-win_len+1, win_len, wd,ht,1)
         recons_seq_or = recons_seq
 
@@ -217,23 +217,21 @@ class SeqExp(ImgExp):
 
         return RE_dict, recons_seq_or, error
 
-    def test(self, eval_type = 'per_video', RE_type ='r', animate=False, indicative_threshold_animation=False):
+    def test(self, eval_type='per_video', RE_type='r', animate=False, indicative_threshold_animation=False):
 
         '''
-            Gets AUC ROC/PR for all videos, using various (20) scoring schemes.
-            Save scores to './AEComparisons/all_scores/self.dset/self.model_name.csv'
-            Assumes self.model has been initialized
-            '''
+        Gets AUC ROC/PR for videos.
+        Save scores to './AEComparisons/scores/self.dset/self.model_name-RE_type_eval_type.csv'
+        Assumes self.model has been initialized
+        '''
 
-        dset, to_load, img_width, img_height = self.dset, self.pre_load, self.img_width, self.img_height
+        dset, to_load, img_width, img_height, win_len = self.dset, self.pre_load, self.img_width, self.img_height, self.win_len
         stride = 1
-        win_len = self.win_len
         model_name = os.path.basename(to_load).split('.')[0]
         print(model_name)
 
-        labels_total_l = []
-        vid_index = 0
-        preds_total = []
+        labels_all_videos = [] # Per-frame labels (0 or 1 ) from all videos (1 denotes an intrusion or fall)
+        preds_all_videos = []
 
         # h5 file path!
         path = root_drive + '/H5Data/Data_set-{}-imgdim{}x{}.h5'.format(dset, img_width, img_height)
@@ -244,68 +242,65 @@ class SeqExp(ImgExp):
             init_videos(img_width=img_width, img_height=img_height, raw=False, dset=dset)
 
         hf = h5py.File(path, 'r')
-        data_dict = hf['{}/Processed/Split_by_video'.format(dset)] # Get into Split by Videos for Fall Folders Data
+        data_dict = hf['{}/Processed/Split_by_video'.format(dset)] # Get into Split by Videos for Test Folders Data
         vid_dir_keys = generate_test_vid_names(data_dict, dset)
 
         num_vids = len(vid_dir_keys)
         print('num_vids', num_vids)
 
         base = './AEComparisons/scores/{}/'.format(self.dset)
-
         if not os.path.isdir(base):
-            # create dir if it does not exist!
             os.makedirs(base)
-
         save_path = base+'{}_{}.csv'.format(model_name + "-" + RE_type, eval_type)
 
+        vid_index = 0
         f = open(save_path, 'w')
         with f :
-            fnames = ['AUROC'+':'+RE_type+'('+eval_type+')', 'AUPR'+':'+ RE_type+'('+eval_type+')'] # AUROC:r(all_vids), AUROC:r(per_vid)
+            fnames = ['AUROC'+':'+RE_type+'('+eval_type+')', 'AUPR'+':'+ RE_type+'('+eval_type+')']
             writer = csv.DictWriter(f, fieldnames=fnames)
             writer.writeheader()
 
             if(eval_type=='per_video'):
+                # Initialize ROC and PR matrices
                 ROC_mat = np.ones((num_vids, 1))
                 PR_mat = np.ones((num_vids, 1))
 
-            for Fall_name in vid_dir_keys:
+            for test_dir_name in vid_dir_keys:
 
-                if(Fall_name=='Intru65'):
-                    exit(8)
-                print(Fall_name)
+                print(test_dir_name)
                 start_time = time.time()
-                # Get frames and labels of a Fallx folder
-                vid_total = data_dict[Fall_name]['Data'][:]
-                labels_total = data_dict[Fall_name]['Labels'][:]
-                test_labels = labels_total
-                test_data = vid_total.reshape(len(vid_total), img_width, img_height, 1)
-                # Create array of frame windows!
-                test_data_windowed = create_windowed_arr(test_data, stride, win_len)
 
-                RE_pred, recons_seq, error_seq = self.get_MSE(test_data_windowed, agg_type=RE_type)
+                # Get frames and labels of a test folder
+                video_frames = data_dict[test_dir_name]['Data'][:]
+                video_frames = video_frames.reshape(len(video_frames), img_width, img_height, 1)
+                video_frame_labels = data_dict[test_dir_name]['Labels'][:]
+
+                # Create array of frame windows!
+                video_windowed = create_windowed_arr(video_frames, stride, win_len)
+
+                # Predict, calculate MSE and obtain prediction scores per frame with reconstructed and error sequence
+                RE_scores, recons_seq, error_seq = self.get_MSE(video_windowed, agg_type=RE_type)
 
                 if(eval_type=='all_videos'):
-                    labels_total_l.extend(labels_total)
-                    preds_total.extend(RE_pred)
+                    labels_all_videos.extend(video_frame_labels)
+                    preds_all_videos.extend(RE_scores)
 
                 elif(eval_type=='per_video'):
                     plot = False
-                    # Get AUROC, Confusion matrix, Geometric mean score & AUPR scores
-                    auc_roc, conf_mat, g_mean, auc_pr, roc_thres, pr_thres = get_output(
-                        labels=test_labels, \
-                        predictions=RE_pred, get_thres=True,
+                    # Get AUROC and AUPR scores; optional optimal threshold for plot
+                    auc_roc, auc_pr, roc_thres, pr_thres = get_output(
+                        labels=video_frame_labels,
+                        predictions=RE_scores, get_thres=True,
                         data_option=RE_type,
                         to_plot=plot, dset=dset,
                         model_name=model_name,
-                        dir_name=Fall_name)
+                        dir_name=test_dir_name)
                     ROC_mat[vid_index, 0] = auc_roc
                     PR_mat[vid_index, 0] = auc_pr
-
                     writer.writerow({fnames[0]: truncate(auc_roc, 3), fnames[1]: truncate(auc_pr, 3)})
 
                     print("AUROC", auc_roc)
                     print("AUPR", auc_pr)
-
                     print("Without Animation Time %.2f s or %.2f mins" % (time.time() - start_time, (time.time() - start_time) / 60))
 
                     if animate == True:
@@ -313,26 +308,24 @@ class SeqExp(ImgExp):
                         ani_dir = ani_dir + '/{}'.format(model_name)
                         if not os.path.isdir(ani_dir):
                             os.makedirs(ani_dir)
-                        ani_dir = ani_dir + '/{}'.format(Fall_name)
+                        ani_dir = ani_dir + '/{}'.format(test_dir_name)
                         if not os.path.isdir(ani_dir):
                             os.makedirs(ani_dir)
                         print('saving animation to {}'.format(ani_dir))
                         tr = 0 # by default no indicative threshold
                         if(indicative_threshold_animation== True):
                             tr = roc_thres
-                        animate_fall_detect_Spresent(testfall=test_data, \
+                        animate_fall_detect_Spresent(testfall=video_frames,
                                                      recons=recons_seq[:, int(np.floor(win_len / 2)), :],
                                                      error_map_seq=error_seq[:, int(np.floor(win_len / 2)), :],
-                                                     scores=RE_pred,
+                                                     scores=RE_scores,
                                                      to_save=ani_dir + '/{}.mp4'.format(RE_type),
                                                      win_len=8,
                                                      legend_label= RE_type,
                                                      threshold= tr
                                                      )
 
-                        print("With Animation Time %.2f s or %.2f mins" % (
-                            time.time() - start_time, (time.time() - start_time) / 60))
-
+                        print("With Animation Time %.2f s or %.2f mins" % (time.time() - start_time, (time.time() - start_time) / 60))
                 else:
                     print("eval_type wrong...")
                     print("possible options: all_videos or per_video")
@@ -340,17 +333,17 @@ class SeqExp(ImgExp):
                     exit()
                 vid_index += 1  # next video
 
-            if(eval_type=='all_videos'):
-                labels_total_l = np.asarray(labels_total_l)
-                preds_total = np.asarray(preds_total)
-                plot= False
-                auc_roc, conf_mat, g_mean, auc_pr, roc_thres, pr_thres = get_output(
-                    labels=labels_total_l, \
-                    predictions=preds_total, get_thres=True,
+            if(eval_type == 'all_videos'):
+                labels_all_videos = np.asarray(labels_all_videos)
+                preds_all_videos = np.asarray(preds_all_videos)
+                plot = False
+                auc_roc, auc_pr, roc_thres, pr_thres = get_output(
+                    labels=labels_all_videos,
+                    predictions=preds_all_videos, get_thres=True,
                     data_option=RE_type,
                     to_plot=plot, dset=dset,
                     model_name=model_name,
-                    dir_name=Fall_name)
+                    dir_name=test_dir_name)
                 writer.writerow({fnames[0]: truncate(auc_roc, 2), fnames[1]: truncate(auc_pr, 2)})
                 f.close()
 
@@ -365,11 +358,8 @@ class SeqExp(ImgExp):
                 AUPR_std = np.std(PR_mat, axis=0)
                 AUPR_avg_std = join_mean_std(AUPR_avg, AUPR_std)
 
-                writer.writerow({fnames[0]: 'Average (Std)'
-                                 })
-
+                writer.writerow({fnames[0]: 'Average (Std)'})
                 writer.writerow({fnames[0]: AUROC_avg_std[0],
                                  fnames[1]: AUPR_avg_std[0],
                                  })
-
                 f.close()

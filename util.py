@@ -38,35 +38,24 @@ def threshold(predictions=None, t=0.5):
 
 def get_output(labels, predictions, get_thres=False, to_plot=False, data_option=None, t=0.5, pos_label=1,
                dset='Thermal', model_name='dst', dir_name='None'):
-    # Calculate Confusion matrix, AUROC, AUPR and Geometric mean score!
+    # Calculate AUROC, AUPR and optimal threshold if asked for!
 
-    predicted_classes = threshold(predictions, t)  # not useful t=0.5
-    true_classes = labels
-
-    # create confusion matrix (2 classes)
-    conf_mat = confusion_matrix(y_true=true_classes, y_pred=predicted_classes)
-    # report = classification_report(true_classes, predicted_classes)
-    g_mean = geometric_mean_score(labels, predicted_classes)
+    # predicted_classes = threshold(predictions, t)  # not useful t=0.5
+    # true_classes = labels
+    #
+    # # create confusion matrix (2 classes)
+    # conf_mat = confusion_matrix(y_true=true_classes, y_pred=predicted_classes)
+    # # report = classification_report(true_classes, predicted_classes)
+    # g_mean = geometric_mean_score(labels, predicted_classes)
     AUROC = []
     AUPR = []
 
-    if np.count_nonzero(labels) > 0 and np.count_nonzero(labels) != labels.shape[0]:
-        # Makes sure both classes present
-
-        fpr, tpr, thresholds_roc = roc_curve(y_true=true_classes, y_score=predictions,
-                                             pos_label=pos_label)
-        # thresholds_roc is from 1 to min. value of prediction i.e. x-mean or x-std score
-
+    if np.count_nonzero(labels) > 0 and np.count_nonzero(labels) != labels.shape[0]: # Makes sure both classes present
+        fpr, tpr, thresholds_roc = roc_curve(y_true=labels, y_score=predictions, pos_label=pos_label)
         AUROC = auc(fpr, tpr)
-
-        precision, recall, thresholds_pr = precision_recall_curve(true_classes,
-                                                                  predictions)
-        # thresholds_pr is from min. value of prediction to  max value
-        # precision goes towards 1 and recall from 1 to  0
-
+        precision, recall, thresholds_pr = precision_recall_curve(labels, predictions)
         AUPR = auc(recall, precision)
-
-        precision = precision[:-1]  # TODO verify this
+        precision = precision[:-1]
         recall = recall[:-1]
 
         if get_thres:
@@ -79,11 +68,11 @@ def get_output(labels, predictions, get_thres=False, to_plot=False, data_option=
                     os.makedirs(score_dir)
                 print('saving ind. scores to {}'.format(score_dir))
                 plot_RE_hist(labels, predictions, data_option, dir_name, save_dir=score_dir, save_fig=True)
-            return AUROC, conf_mat, g_mean, AUPR, optimal_roc_threshold, optimal_pr_threshold
+            return AUROC, AUPR, optimal_roc_threshold, optimal_pr_threshold
     else:
         print('only one class present')
 
-    return AUROC, conf_mat, g_mean, AUPR
+    return AUROC, AUPR
 
 
 def get_roc_optimal_threshold(tpr, fpr, thresholds):
