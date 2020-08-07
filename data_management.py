@@ -10,11 +10,7 @@ import sys
 from h5py_init import init_videos, init_data_by_class
 root_drive = '.'
 
-#if not os.path.isdir(root_drive):
-#    print('Using Sharcnet equivalent of root_drive')
-#    root_drive = '/home/jjniatsl/project/jjniatsl/Fall-Data'
-
-def get_windowed_data(dset = 'Thermal', ADL_only = True, win_len = 8, img_width = 64, img_height = 64, avoid_vid =None, save_np=False):
+def get_windowed_data(dset = 'Thermal_Fall', ADL_only = True, win_len = 8, img_width = 64, img_height = 64, avoid_vid =None, save_np=False):
 
     '''
     Creates windowed version of dset data. avoid a video if required!
@@ -40,7 +36,7 @@ def get_windowed_data(dset = 'Thermal', ADL_only = True, win_len = 8, img_width 
             print(data_dict)
             if ADL_only == True:
                 data_dict = dict((key, value) for key, value in data_dict.items() if
-                     ('adl' in key or 'ADL' in key or 'NA' in key) and (key != avoid_vid))
+                     ('ADL' in key or 'NA' in key) and (key != avoid_vid))
             print(data_dict)
             vids_win = create_windowed_arr_per_vid(vids_dict = data_dict, \
                         stride = 1, \
@@ -62,11 +58,11 @@ def get_windowed_data(dset = 'Thermal', ADL_only = True, win_len = 8, img_width 
 
     return vids_win
 
-def init_windowed_arr(dset = 'Thermal', ADL_only = True, win_len = 8, img_width = 64, img_height = 64):
+def init_windowed_arr(dset = 'Thermal_Fall', ADL_only = True, win_len = 8, img_width = 64, img_height = 64):
 
     '''
     Creates windowed version of dset data. Saves windowed array to
-    'npData/ADL_data-proc-win_{}.npy'.format(train_or_test, dset, win_len), vids_win)
+    npData folder as npy file
 
     Params:
         str dset: dataset to use
@@ -81,29 +77,28 @@ def init_windowed_arr(dset = 'Thermal', ADL_only = True, win_len = 8, img_width 
 
     if not os.path.isfile(master_path):
         print('initializing h5py..')
-        init_videos(img_width = img_width, img_height = img_height, raw = False, dset = dset)
+        init_videos(img_width=img_width, img_height=img_height, raw=False, dset=dset)
 
     with h5py.File(master_path, 'r') as hf:
 
             data_dict = hf[dset + '/Processed/Split_by_video']
-
             if ADL_only == True:
-                data_dict = dict((key,value) for\
-                 key, value in data_dict.items() if 'adl' in key or 'ADL' in key or 'NA' in key) #Get only ADL vids
+                # Get only normal behaviour vids
+                data_dict = dict((key,value) for key, value in data_dict.items() if 'ADL' in key or 'NA' in key)
 
-            vids_win = create_windowed_arr_per_vid\
-                        (vids_dict = data_dict, \
-                        stride = 1, \
-                        win_len = win_len,\
-                        img_width= img_width,\
-                        img_height= img_height)
+            vids_win = create_windowed_arr_per_vid(
+                        vids_dict=data_dict,
+                        stride=1,
+                        win_len=win_len,
+                        img_width=img_width,
+                        img_height=img_height)
 
             if ADL_only == True:
                 save_path = root_drive + '/npData/{}/'.format(dset)
 
                 if not os.path.isdir(save_path):
                     os.makedirs(save_path)
-                save_path = save_path + 'ADL_data-proc-win_{}.npy'.format(win_len)
+                save_path = save_path + 'training_data-imgdim_{}x{}-win_{}.npy'.format(img_width, img_height, win_len)
 
                 print('saving data to ', save_path)
                 np.save(save_path, vids_win)
@@ -257,20 +252,15 @@ def create_windowed_arr_per_vid(vids_dict, stride, win_len, img_width, img_heigh
 
     '''
     returns windows made of all videos
-    Assumes vids_dict is h5py structure, ie. vids_dict = hf['Data_2017/UR/Raw/Split_by_video']
+    Assumes vids_dict is h5py structure
     data set must contain atleast win_len frames
     '''
 
     vid_list = [len(vid['Data'][:]) for vid in list(vids_dict.values())]
-
     num_windowed = sum([int( np.floor((val-win_len)/stride) ) + 1 for val in vid_list])
-
     output_shape = (num_windowed, win_len, img_width, img_height, 1)
-
     print(output_shape)
-
     total = np.zeros(output_shape)
-
     i = 0
     for vid, name in zip(vids_dict.values(), vids_dict.keys()):
         print('windowing vid at', name)
@@ -293,14 +283,12 @@ def create_windowed_arr(arr, stride, win_len):
 
     img_width, img_height = arr.shape[1], arr.shape[2]
 
-    output_length = int( np.floor((len(arr) - win_len) / stride) ) + 1
+    output_length = int(np.floor((len(arr) - win_len) / stride)) + 1
     output_shape = (output_length, win_len, img_width, img_height, 1)
-
     total = np.zeros(output_shape)
-
     i = 0
     while i < output_length:
-        next_chunk = np.array( [arr[i+j] for j in range(win_len)] )
+        next_chunk = np.array([arr[i+j] for j in range(win_len)])
         # Can use np.arange if want to use time step i.e. np.arange(0,win_len,dt)
         total[i] = next_chunk
         i = i + stride
@@ -310,7 +298,7 @@ def create_windowed_arr(arr, stride, win_len):
 
 
 def load_data(split_by_vid_or_class = 'Split_by_vid', raw = False, img_width = 64, \
-    img_height = 64, vid_class = 'NonFall', dset = 'Thermal'):
+    img_height = 64, vid_class = 'NonFall', dset = 'Thermal_Dummy'):
 
     """
     Note :to use this function, need to have downloaded h5py for dset,

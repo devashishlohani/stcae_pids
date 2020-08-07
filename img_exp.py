@@ -64,11 +64,11 @@ class ImgExp:
 		'''
 	    Saves the model of the experiment to './Models/self.dset/self.model_name'
 	    '''
-		#save_string = self.exp_name #Do this again incase info added to str based on data load(ie after init)
+
 		if self.hor_flip == True:
 			self.model_name = self.model_name + '-hor_flip'
 
-		base = './Models/{}/'.format(self.dset)
+		base = './Models/{}'.format(self.dset)
 
 		if not os.path.isdir(base):
 			os.makedirs(base)

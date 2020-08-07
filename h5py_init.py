@@ -8,80 +8,50 @@ import sys
 
 '''
 Note, these functions will not work without setting up the directories of video frames as shown in get_dir_lists. 
-Alternatively, contact me to get access to the final h5Py datasets, which this code procudes.
 '''
 
-root_drive = '.' #Current dir for now
-
-#if not os.path.isdir(root_drive):
-#    print('Using Sharcnet equivalent of root_drive')
-#    root_drive = '/home/jjniatsl/project/jjniatsl/Datasets'
+root_drive = '.'
 
 def get_dir_lists(dset):
 
     '''
-    Gets videos (ADl, Fall) directory path list
-    
+    Gets videos directory path list
     Params:
         str dset: dataset to be loaded
     Returns:
-        paths to ADL and Fall videos
+        paths to ADL/NA and Fall/Intrusion videos
     '''
 
-    path_Fall = root_drive + '/Datasets/{}/Fall/Fall*'.format(dset)
-    path_ADL = root_drive + '/Datasets/{}/NonFall/ADL*'.format(dset)
+    path_abnormal_vids = root_drive + '/Datasets/{}/Fall/Fall*'.format(dset)
+    path_normal_vids = root_drive + '/Datasets/{}/NonFall/ADL*'.format(dset)
 
-    # Update path_Fall & ADL if some dataset in arranged in some particular way in folders!
-    if dset == 'IDD':
-        path_Fall = root_drive + '/Datasets/{}/Intrusion/Intru*'.format(dset)
-        path_ADL = root_drive + '/Datasets/{}/NonIntrusion/NA*'.format(dset)
-
-    elif dset == 'Thermal-Dummy':
-        path_Fall = root_drive + '/Datasets/Thermal-Dummy/Fall/Fall*'
-        path_ADL = root_drive + '/Datasets/Thermal-Dummy/NonFall/ADL*'
-
-    elif dset == 'Thermal':
-        path_Fall = root_drive + '/Datasets/Thermal/Fall/Fall*'
-        path_ADL = root_drive + '/Datasets/Thermal/NonFall/ADL*'
-    
-    elif dset == 'UR':
-        path_Fall = root_drive + '/Datasets/UR_Kinect/Fall/original/Fall*'
-        path_ADL = root_drive + '/Datasets/UR_Kinect/NonFall/original/adl*'
-    
-    elif dset == 'UR-Filled':
-        path_Fall = root_drive + '/Datasets/UR_Kinect/Fall/filled/Fall*'
-        path_ADL = root_drive + '/Datasets/UR_Kinect/NonFall/filled/adl*'
-
-    elif dset == 'SDU':
-        path_Fall = root_drive + '/Datasets/SDUFall/Fall/Fall*/Depth'
-        path_ADL = root_drive + '/Datasets/SDUFall/NonFall/ADL*/Depth'
-    
-    elif dset == 'SDU-Filled':
-        path_Fall = root_drive + '/Datasets/SDUFall/Fall/Fall*/Filled'
-        path_ADL = root_drive + '/Datasets/SDUFall/NonFall/ADL*/Filled'
+    # Update paths if some dataset is arranged in some particular way in folders!
+    if dset == 'Thermal_Intrusion':
+        path_abnormal_vids = root_drive + '/Datasets/{}/Intrusion/Intru*'.format(dset)
+        path_normal_vids = root_drive + '/Datasets/{}/NonIntrusion/NA*'.format(dset)
         
-    print(path_Fall, path_ADL)
+    print(path_normal_vids, path_abnormal_vids)
 
     # glob returns non-ordered list of all pathnames matching a specified pattern
-    vid_dir_list_Fall = glob.glob(path_Fall)
-    vid_dir_list_ADL = glob.glob(path_ADL)
+    normal_vids_dir = glob.glob(path_normal_vids)
+    abnormal_vids_dir = glob.glob(path_abnormal_vids)
 
-    if len(vid_dir_list_Fall) == 0:
-        print('no Fall vids found')
+    if len(abnormal_vids_dir) == 0:
+        print('no Fall/Intru vids found')
     
-    if len(vid_dir_list_ADL) == 0:
-        print('no ADL vids found')
+    if len(normal_vids_dir) == 0:
+        print('no ADL/NA vids found')
 
-    return vid_dir_list_ADL, vid_dir_list_Fall
+    return normal_vids_dir, abnormal_vids_dir
 
 
-def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
+def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal_Fall'):
 
     '''
 
     Creates or overwrites h5py group corresponding to root_path (in body),
     for the h5py file located at
-    'N:/FallDetection/Datasets/H5Data/Data_set-{}-imgdim{}x{}.h5'.format(dset, img_width, img_height)
+    'H5Data/Data_set-{}-imgdim{}x{}.h5'.format(dset, img_width, img_height)
 
     For info on h5py: http://docs.h5py.org/en/stable/quick.html#quick
 
@@ -89,12 +59,12 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
     
     Processed (or Raw)
         Split_by_video
-            ADL1
+            ADL1 or NA1
                 Data
                     <HDF5 dataset "Data": shape (1397, 4096), type "<f8">
                 Labels
                     <HDF5 dataset "Labels": shape (1397,), type "<i4">
-            ADL2
+            ADL2 or NA2
                 Data
                     <HDF5 dataset "Data": shape (3203, 4096), type "<f8">
                 Labels
@@ -103,13 +73,13 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
                 .
                 .
 
-            ADL{N}
+            ADL{N} or NA{N}
                 Data
                     <HDF5 dataset "Data": shape (3203, 4096), type "<f8">
                 Labels
                     <HDF5 dataset "Labels": shape (3203,), type "<i4">
 
-            Fall1
+            Fall1 or Intru1
                 Data
                     <HDF5 dataset "Data": shape (49, 4096), type "<f8">
                 Labels
@@ -117,14 +87,14 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
                 .
                 .
                 .
-            Fall{M}
+            Fall{M} or Intru{M}
                 Data
                     <HDF5 dataset "Data": shape (49, 4096), type "<f8">
                 Labels
                     <HDF5 dataset "Labels": shape (49,), type "<i4">
 
 
-            where N is number of ADL videos, and M is number of Fall videos.
+            where N is number of ADL/NA videos, and M is number of Fall/Intrusion videos.
 
     Params:
         bool raw: if true, data will be not processed (mean centering and intensity scaling)
@@ -133,11 +103,11 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
         str dset: dataset to be loaded
     '''
 
-    path = root_drive + '/H5Data/Data_set-{}-imgdim{}x{}.h5'.format( dset, img_width, img_height)
+    path = root_drive + '/H5Data/Data_set-{}-imgdim{}x{}.h5'.format(dset, img_width, img_height)
 
-    vid_dir_list_0, vid_dir_list_1 = get_dir_lists(dset) # Dir of ADL, Fall videos
+    normal_vids_dir, abnormal_vids_dir = get_dir_lists(dset) # Directories of ADL/NA, Fall/Intrusion videos
 
-    if len(vid_dir_list_0) == 0 and len(vid_dir_list_1) == 0:
+    if len(normal_vids_dir) == 0 and len(abnormal_vids_dir) == 0:
         print('no videos found, make sure video files are placed in Datasets folder, terminating...')
         sys.exit()
 
@@ -148,19 +118,19 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
 
     print('creating data at root_path', root_path)
 
-    def init_videos_helper(root_path): #Nested to keep scope
+    def init_videos_helper(root_path):
             with h5py.File(path, 'a') as hf:
                 root = hf.create_group(root_path)
 
-                for vid_dir in vid_dir_list_1:
-                    # Create hf group for each Fall video with frames and labels for frame
-                    init_vid(vid_dir = vid_dir, vid_class = 1, img_width = img_width,
-                             img_height = img_height, hf = root, raw = raw, dset = dset)
+                for vid_dir in abnormal_vids_dir:
+                    # Create hf group for each Fall/Intrusion video with frames and labels for frame
+                    init_vid(vid_dir=vid_dir, vid_class=1, img_width=img_width,
+                             img_height=img_height, hf=root, raw=raw, dset=dset)
 
-                for vid_dir in vid_dir_list_0:
-                    # Create hf group for each ADL video with frames and labels for frame
-                    init_vid(vid_dir = vid_dir, vid_class = 0, img_width = img_width,
-                             img_height = img_height, hf = root, raw = raw, dset = dset)
+                for vid_dir in normal_vids_dir:
+                    # Create hf group for each ADL/NA video with frames and labels for frame
+                    init_vid(vid_dir=vid_dir, vid_class=0, img_width=img_width,
+                             img_height=img_height, hf=root, raw=raw, dset=dset)
 
     if os.path.isfile(path):
         # If .h5 already exists
@@ -169,7 +139,6 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
             print('video h5py file exists, deleting old group {}, creating new'.format(root_path))
             del hf[root_path]
             hf.close()
-
             init_videos_helper(root_path)
 
         else:
@@ -183,56 +152,47 @@ def init_videos(img_width = 64, img_height = 64, raw = False, dset = 'Thermal'):
         init_videos_helper(root_path)
 
 
-def init_vid(vid_dir = None, vid_class = None, img_width = 32, img_height = 32,
-             hf = None, raw = False,  dset = 'Thermal'):
+def init_vid(vid_dir = None, vid_class = None, img_width = 64, img_height = 64,
+             hf = None, raw = False,  dset = 'Thermal_Fall'):
     '''
     Creates hf group with vid_dir name to put Data and Labels for each frame
-    Processes all frames in video in ascending order & fetches labels for Fall vids from csv
+    Processes all frames in video in ascending order & fetches labels for Fall/Intrusion vids from csv if asked
 
     Params:
-        str vid_dir: path to vid dir of frames to be initialzied
-        int vid_class: 1 for Fall, 0 for NonFall
+        str vid_dir: path to vid dir of frames to be initialized
+        int vid_class: 1 for Fall/Intrusion, 0 for NonFall/NonIntrusion
         h5py group: group within which new group is nested
-
     '''
 
     print('initializing vid at', vid_dir)
 
     #--Get all frames from a video reading frames in ↑ order & processing each frame
-    # data.shape = (#frames, img_ht, img_wdth, 1)
-    data = create_img_data_set(fpath = vid_dir, ht = img_height, wd = img_width, raw = raw,
-                               sort = True, dset = dset)
+    data = create_img_data_set(fpath=vid_dir, ht=img_height, wd=img_width, raw=raw, sort=True, dset=dset)
+    labels = np.zeros(len(data)) # Labels initialized to 0 for each frame
 
-    labels = np.zeros(len(data)) # Labels intialized to 0 for each frame
+    vid_dir_name = os.path.basename(vid_dir)
+    print('vid_dir_name', vid_dir_name) # eg: ADL2 or Fall31 (vid folder name)
+    grp = hf.create_group(vid_dir_name) # Create folder name group eg. ADL2 or Fall31
 
-    if dset == 'SDU' or dset == 'SDU-Filled':
-        vid_dir_name = os.path.basename(os.path.dirname(vid_dir))
-    else:
-        vid_dir_name = os.path.basename(vid_dir)
-
-    print('vid_dir_name', vid_dir_name) # eg: Fall31 (vid folder name)
-    grp = hf.create_group(vid_dir_name) # Create folder name group eg. Fall31
-
-    # Fetch fall label start end from csv if Fall vid, assign to labels array
-    if (vid_dir_name in ['Fall' + str(i) for i in range(201)]) or (vid_dir_name in ['Intru' + str(i) for i in range(250)]): # 201 is max fall index across all vids
-        print('setting fall start')
-        Fall_start, Fall_stop = get_fall_indeces(vid_dir_name, dset)
-        labels[Fall_start-1:Fall_stop] = 1 # Fall_start:Fall_stop + 1
+    # If abnormal video, get fall/intrusion labels for each frame
+    if vid_class == 1:
+        print('setting fall/intrusion start & end')
+        abnormality_start, abnormality_stop = get_abnormal_indices(vid_dir_name, dset)
+        labels[abnormality_start-1:abnormality_stop] = 1
     
     grp['Labels'] = labels
     grp['Data'] = data
 
-def get_fall_indeces(Fall_name, dset):
+def get_abnormal_indices(dir_name, dset):
 
-    # Get Fall start, end indices from Labels.csv
+    # Get Fall/Intrusion start, end indices from Labels.csv
 
     root_dir = './Datasets/'
     labels_dir = root_dir + '/{}/Labels.csv'.format(dset)
 
     import pandas as pd
-    my_data = pd.read_csv(labels_dir, sep=',', header = 0, index_col = 0)
-    
-    start, stop = my_data.loc[Fall_name][:2]
+    my_data = pd.read_csv(labels_dir, sep=',', header=0, index_col=0)
+    start, stop = my_data.loc[dir_name][:2]
     print('start, stop', start, stop)
 
     return int(start), int(stop)
@@ -240,41 +200,19 @@ def get_fall_indeces(Fall_name, dset):
 
 def sort_frames(frames, dset):
 
+        # Frames are organized as: FALL_1-0001.jpg, FALL_1-0003.jpg, FALL_1-0002.jpg,...
         # Sorts the list frames in the ascending order acc to dset type
 
-        if dset == 'SDU' or dset == 'SDU-Filled': #TODO remove try except, failing to sort shoudl stop!
-            print('sorting SDU frames...')
-            
-            #try:
-            frames = sorted(frames, key = lambda x: int(os.path.basename(x).split('.')[0])) #SDU
-            # except ValueError:
-            #     print('failed to sort SDU vid frames')
-            #     pass
-        elif dset == 'UR' or dset == 'UR-Filled' or dset == 'Thermal' or dset == 'Thermal-Intrusion' or dset == 'IDD':
-            print('sorting UR or Thermal frames...')
-            try:
-                frames = sorted(frames, key = lambda x: int(x.split('-')[-1].split('.')[0]))
-            except ValueError:
-                print('failed to sort UR vid frames')
-                return
-            
-        elif dset == 'TST': 
-            try:
-                frames = sorted(frames, key = lambda x: int(x.split('_')[-1].split('.')[0]))
-            except ValueError:
-                print('failed to sort vid frames, trying again....')
-                pass
-
-        elif dset == 'FallFree' or dset == 'FallFree-Filled':
-            try:
-                frames = sorted(frames, key = lambda x: int(x.split('_')[2]))
-            except ValueError:
-                print('failed to sort vid frames, trying again....')
-                pass
+        print('sorting frames...')
+        try:
+            frames = sorted(frames, key=lambda x: int(x.split('-')[-1].split('.')[0]))
+        except ValueError:
+            print('failed to sort vid frames')
+            return
 
         return frames
 
-def create_img_data_set(fpath, ht = 64, wd = 64, raw = False, sort = True, dset = 'Thermal'):
+def create_img_data_set(fpath, ht = 64, wd = 64, raw = False, sort = True, dset = 'Thermal_Fall'):
 
         '''
         Creates data set of all images located at fpath. Sorts images if asked!
@@ -292,14 +230,11 @@ def create_img_data_set(fpath, ht = 64, wd = 64, raw = False, sort = True, dset 
         '''
 
         fpath = fpath.replace('\\', '/')
-
         # Get all frames inside folder or folders with jpg or png extension
         frames = glob.glob(fpath+'/*.jpg') + glob.glob(fpath+'/*.png')
 
         if sort == True:
             frames = sort_frames(frames, dset)
-
-        #print("\n".join(frames)) #Use this to check if sorted
 
         data = np.zeros((frames.__len__(), ht, wd, 1)) # (frame_length, 64, 64, 1)
 
@@ -313,16 +248,11 @@ def create_img_data_set(fpath, ht = 64, wd = 64, raw = False, sort = True, dset 
 
             if raw == False:
                 # Image Processing
-
                 img = img - np.mean(img) # Mean Centering
                 img = img.astype('float32') / 255. # Rescaling
-
             data[i, :, :, :] = img
 
-       # data = data.reshape((len(data), np.prod(data.shape[1:]))) #Flatten the images
-
         print('data.shape', data.shape)
-
         return data
 
 def init_data_by_class(vid_class = 'NonFall', dset = 'Thermal',\

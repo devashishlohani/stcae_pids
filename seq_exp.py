@@ -44,28 +44,27 @@ class SeqExp(ImgExp):
                  pre_load=None, initial_epoch=0, epochs=1, dset='Thermal',
                  win_len=8, hor_flip=False, img_width=64, img_height=64):
 
-        ImgExp.__init__(self, model=model, img_width=img_width, \
-                        img_height=img_height, model_name=model_name, \
-                        batch_size=batch_size, model_type=model_type, \
-                        pre_load=pre_load, initial_epoch=initial_epoch, \
+        ImgExp.__init__(self, model=model, img_width=img_width,
+                        img_height=img_height, model_name=model_name,
+                        batch_size=batch_size, model_type=model_type,
+                        pre_load=pre_load, initial_epoch=initial_epoch,
                         epochs=epochs, hor_flip=hor_flip, dset=dset)
 
         self.win_len = win_len
 
-    def set_train_data(self, raw=False, mmap_mode=None):  # TODO init windows from h5py if no npData found
+    def set_train_data(self, raw=False, mmap_mode=None):
 
         '''
         loads or initializes windowed train data, and sets self.train_data accordingly
         '''
 
-        to_load = root_drive + '/npData/{}/ADL_data-proc-win_{}.npy'.format(self.dset, self.win_len)
+        to_load = root_drive + '/npData/{}/training_data-imgdim_{}x{}-win_{}.npy'.format(self.dset, self.img_width, self.img_height, self.win_len)
 
         if os.path.isfile(to_load):
-            print('npData found, loading..')
+            print('Training (npData) found, loading..')
             self.train_data = np.load(to_load, mmap_mode=mmap_mode)
         else:
-            print('npData not found, initializing..')
-
+            print('Training (npData) not found, initializing..')
             self.train_data = init_windowed_arr(dset=self.dset, ADL_only=True,
                                                 win_len=self.win_len,
                                                 img_width=self.img_width,
@@ -95,9 +94,9 @@ class SeqExp(ImgExp):
     def train(self, sample_weight=None):
 
         """
-                trains a sequential autoencoder on windowed data(sequences of
-                contiguous frames are reconstucted)
-                """
+        trains a sequential autoencoder on windowed data(sequences of
+        contiguous frames are reconstructed)
+        """
 
         model_name = self.model_name
         base = './Checkpoints/{}'.format(self.dset)
@@ -108,8 +107,7 @@ class SeqExp(ImgExp):
         if not os.path.isdir(base_logs):
             os.mkdir(base_logs)
 
-        checkpointer = ModelCheckpoint(filepath=base + '/' + model_name + '-' + \
-                                                '{epoch:03d}-{loss:.3f}.hdf5', period=100, verbose=1)
+        checkpointer = ModelCheckpoint(filepath=base + '/' + model_name + '-' + '{epoch:03d}-{loss:.3f}.hdf5', period=100, verbose=1)
         timestamp = time.time()
         print('./Checkpoints/' + model_name + '-' + '.{epoch:03d}-{loss:.3f}.hdf5')
 
@@ -118,25 +116,20 @@ class SeqExp(ImgExp):
         print(callbacks_list)
         print(csv_logger)
 
-        self.model.fit(self.train_data, self.train_data, epochs = self.epochs,
-                       batch_size = self.batch_size, verbose = 2,
-                       callbacks = callbacks_list, sample_weight = sample_weight)
+        self.model.fit(self.train_data, self.train_data, epochs=self.epochs,
+                       batch_size=self.batch_size, verbose=2,
+                       callbacks=callbacks_list, sample_weight=sample_weight)
         self.save_exp()
 
     def init_flipped_by_win(self, to_load_flip):
 
         if os.path.isfile(to_load_flip):
             data_flip = np.load(to_load_flip)
-            data_flip = data_flip.reshape(len(data_flip), self.train_data.shape[1],
-                                          self.train_data.shape[2],
-                                          self.train_data.shape[3], 1)
-
+            data_flip = data_flip.reshape(len(data_flip), self.train_data.shape[1], self.train_data.shape[2], self.train_data.shape[3], 1)
             return data_flip
-
         else:
             print('creating flipped by window data..')
             data_flip = flip_windowed_arr(self.train_data)
-
             return data_flip
 
     def get_MSE(self, test_data, agg_type='r_sigma'):

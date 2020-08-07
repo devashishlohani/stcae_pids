@@ -37,16 +37,9 @@ def threshold(predictions=None, t=0.5):
 
 
 def get_output(labels, predictions, get_thres=False, to_plot=False, data_option=None, t=0.5, pos_label=1,
-               dset='Thermal', model_name='dst', dir_name='None'):
+               dset='Thermal_Fall', model_name='dst', dir_name='None'):
     # Calculate AUROC, AUPR and optimal threshold if asked for!
 
-    # predicted_classes = threshold(predictions, t)  # not useful t=0.5
-    # true_classes = labels
-    #
-    # # create confusion matrix (2 classes)
-    # conf_mat = confusion_matrix(y_true=true_classes, y_pred=predicted_classes)
-    # # report = classification_report(true_classes, predicted_classes)
-    # g_mean = geometric_mean_score(labels, predicted_classes)
     AUROC = []
     AUPR = []
 
@@ -296,9 +289,9 @@ def play_frames(frames, decoded_frames=[], labels=[]):
 
 def generate_test_vid_names(data_dict, dset):
 
-    ##--generates test folder names
+    '''--generates test folder names'''
 
-    if dset == 'Thermal_Fall':
+    if dset == 'Thermal_Fall' or 'Thermal_Dummy':
         vid_base_name = 'Fall'
     elif dset == 'Thermal_Intrusion':
         vid_base_name = 'Intru'
