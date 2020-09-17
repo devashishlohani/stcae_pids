@@ -3,6 +3,20 @@
 This source code is for submission at workshop RRPR 2020.
 We reproduce the results for Fall detection and extend 3D convolutional autoencoder for Intrusion detection task. 
 
+**Installation**
+
+1. Install conda from https://docs.conda.io/en/latest/miniconda.html depending on your OS.
+
+2. Create conda environment from the given environment.yml file. 
+
+   Go to root location of this project in your terminal and run the following command
+   
+   `conda env create -f environment.yml`
+
+3. Activate conda environment
+
+   `source activate stcae`
+
 **Code Usage:**
 
 The code base is split into two main subsets
@@ -13,11 +27,15 @@ stcae_test.py - For testing different models
 
 **Training:**
 
-To use this code, first run the training module. A model is then saved to Models/Dataset/....
+To use this code, first run the training module as:
 
-Specify:
+`python3 stcae_train.py `
 
-Dataset (Task) - dset = 'Thermal_Intrusion' or 'Thermal_Fall'
+A model is then saved to Models/Dataset/....
+
+Specify in stcae_train.py:
+
+Dataset (Task) - dset = 'Thermal_Intrusion' or 'Thermal_Fall' or 'Thermal_Dummy'
 
 Model - Upsampling, Deconvolution or C3D
 
@@ -27,7 +45,11 @@ and other parameters.
 
 **Testing:**
 
-To evaluate the model, run the test module. The results of testing will be saved to AEComparisons. 
+To evaluate the model, run the test module as:
+
+`python3 stcae_test.py `
+ 
+The results of testing will be saved to AEComparisons. 
 Once training has completed, find the saved model under Models/Thermal/{model_name}. 
 To evaluate the model, set the variable pre_load to the path to this model. 
 Run stcae_test.py and find the results in AEComparisons. 

@@ -1,4 +1,4 @@
-name: deepfall
+name: stcae
 channels:
   - menpo
   - conda-forge
