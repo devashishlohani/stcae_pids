@@ -291,7 +291,7 @@ def generate_test_vid_names(data_dict, dset):
 
     '''--generates test folder names'''
 
-    if dset == 'Thermal_Fall' or 'Thermal_Dummy':
+    if dset == 'Thermal_Fall' or dset == 'Thermal_Dummy':
         vid_base_name = 'Fall'
     elif dset == 'Thermal_Intrusion':
         vid_base_name = 'Intru'
