@@ -12,7 +12,12 @@ We reproduce the results for Fall detection and extend 3D convolutional autoenco
    Go to root location of this project in your terminal and run the following command
    
    `conda env create -f environment.yml`
+3. If there are errors, proceed with env.txt file.
 
+   Run the following command
+
+   `conda create --name stcae --file env.txt `
+   
 3. Activate conda environment
 
    `source activate stcae`
