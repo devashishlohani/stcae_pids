@@ -1,4 +1,4 @@
-# Spatio-Temporal Convolutional Autoencoders for Perimeter Intrusion Detection by video protection
+# Spatio-Temporal Convolutional Autoencoders for Perimeter Intrusion Detection
 
 This source code is for submission at workshop RRPR 2020.
 We reproduce the results for Fall detection and extend 3D convolutional autoencoder for Intrusion detection task. 
