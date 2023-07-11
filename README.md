@@ -1,7 +1,7 @@
-# Spatio-Temporal Convolutional Autoencoders for Perimeter Intrusion Detection
+# Official implementation of "STCAE"
 
-This source code is for submission at workshop RRPR 2020.
-We reproduce the results for Fall detection and extend 3D convolutional autoencoder for Intrusion detection task. 
+This is the implementation of our paper ["Spatio-Temporal Convolutional Autoencoders for Perimeter Intrusion Detection"](https://hal.science/hal-03145398v1/preview/Spatio-Temporal_Convolutional_Autoencoders_for_Perimeter_Intrusion_Detection.pdf) (RRPR 2021).
+We propose 3D convolutional autoencoder for Fall detectoion and Intrusion detection task. 
 
 **Installation**
 
@@ -96,3 +96,15 @@ _**1) Fall Detection**_
 
 ![](intrusion_demo_1.gif)
 ![](intrusion_demo_2.gif)
+
+## Bibtex
+```
+@inproceedings{lohani2021spatio,
+  title={Spatio-temporal convolutional autoencoders for perimeter intrusion detection},
+  author={Lohani, Devashish and Crispim-Junior, Carlos and Barth{\'e}lemy, Quentin and Bertrand, Sarah and Robinault, Lionel and Tougne, Laure},
+  booktitle={International Workshop on Reproducible Research in Pattern Recognition},
+  pages={47--65},
+  year={2021},
+  organization={Springer}
+}
+```
